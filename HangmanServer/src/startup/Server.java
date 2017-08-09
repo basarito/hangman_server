@@ -33,12 +33,11 @@ public class Server {
 				//Creating a thread for the new client
 				ClientThread newClient = new ClientThread(clientSocket);
 				newClient.start();
-			
-			
+	
 			}
 			
 		} catch (IOException e) {
-			System.out.println(e);
+			e.printStackTrace();
 		}
 	}
 }
