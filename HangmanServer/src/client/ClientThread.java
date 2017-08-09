@@ -35,7 +35,9 @@ public class ClientThread extends Thread {
 			clientInput = new BufferedReader(new InputStreamReader(communicationSocket.getInputStream()));
 			clientOutput = new PrintStream(communicationSocket.getOutputStream());
 
-			username = getUsername();
+			do {
+				username = getUsername();
+			} while(username.equals(""));
 			Server.onlineUsers.add(this);
 			System.out.println(username+" joined.");
 
@@ -49,38 +51,27 @@ public class ClientThread extends Thread {
 	}
 
 	private String getUsername() {
-		boolean usernameOK = false;
-		boolean found = false;
 		String user="";
 		try {
-			while(!usernameOK) {
-				String input = clientInput.readLine();
-				if(Server.onlineUsers.isEmpty()) {
-					usernameOK=true;
-					clientOutput.println(usernameOK);
-					user=input;
+			String input = clientInput.readLine();
+			if(Server.onlineUsers.isEmpty()) {
+				clientOutput.println(true);
+				user=input;
+				return user;
+			}
+			for(ClientThread t : Server.onlineUsers) {
+				if(t.username.equals(input)) {
+					clientOutput.println(false);
 					return user;
 				}
-				for(ClientThread t : Server.onlineUsers) {
-					if(t.username.equals(input)) {
-						usernameOK=false;
-						clientOutput.println(usernameOK);
-						found=true;
-						break;
-					}
-				}
-				if(found==false) {
-					usernameOK=true;
-					clientOutput.println(usernameOK);
-					user=input;
-					return user;	
-				}
 			}
+			clientOutput.println(true);
+			user=input;
+			return user;	
+
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			System.out.println(e);
 		}
-
 		return user;		
 	}
 
