@@ -40,6 +40,8 @@ public class ClientThread extends Thread {
 			} while(username.equals(""));
 			Server.onlineUsers.add(this);
 			System.out.println(username+" joined.");
+			
+			sendOnlineList();
 
 			//Closing communication
 			communicationSocket.close();
@@ -48,6 +50,16 @@ public class ClientThread extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	private void sendOnlineList() {
+		if(Server.onlineUsers.isEmpty()) {
+			clientOutput.println("\\empty");
+		}
+		for(ClientThread t : Server.onlineUsers) {
+			clientOutput.println(t.username);
+		}
+		clientOutput.println("\\end");
 	}
 
 	private String getUsername() {
