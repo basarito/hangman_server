@@ -35,17 +35,38 @@ public class ClientThread extends Thread {
 			clientInput = new BufferedReader(new InputStreamReader(communicationSocket.getInputStream()));
 			clientOutput = new PrintStream(communicationSocket.getOutputStream());
 
+			
 			do {
-				username = getUsername();
+				try {
+					username = getUsername();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					communicationSocket.close();
+					System.out.println(username+" exited.");
+					return;
+				}
+				
 			} while(username.equals(""));
+			
 			Server.onlineUsers.add(this);
 			System.out.println(username+" joined.");
 			
 			sendOnlineList();
 
+			while(true) {
+				String input = clientInput.readLine();
+				if(input.equals("-1")) {
+					Server.onlineUsers.remove(this);
+					System.out.println(username+" exited.");
+					communicationSocket.close();
+					return;
+				}
+				
+			}
 			//Closing communication
-			communicationSocket.close();
-
+			//communicationSocket.close();
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -62,10 +83,13 @@ public class ClientThread extends Thread {
 		clientOutput.println("\\end");
 	}
 
-	private String getUsername() {
+	private String getUsername() throws Exception {
 		String user="";
 		try {
 			String input = clientInput.readLine();
+			if(input.equals("-1")) {
+				throw new Exception("Client disconnected!");
+			}
 			if(Server.onlineUsers.isEmpty()) {
 				clientOutput.println(true);
 				user=input;
@@ -83,7 +107,8 @@ public class ClientThread extends Thread {
 
 		} catch (IOException e) {
 			System.out.println(e);
-		}
+		} 
+		
 		return user;		
 	}
 
