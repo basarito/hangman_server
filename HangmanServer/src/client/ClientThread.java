@@ -22,10 +22,8 @@ public class ClientThread extends Thread {
 	BufferedReader clientInput = null;
 	PrintStream clientOutput = null;
 
-	//Player info - possible to place it in an object?
-	/*	InetAddress ip_address = communicationSocket.getInetAddress();
-	int port = communicationSocket.getPort();*/
 	String username="";
+	ClientThread opponent = null;
 
 	@Override
 	public void run() {
@@ -35,81 +33,97 @@ public class ClientThread extends Thread {
 			clientInput = new BufferedReader(new InputStreamReader(communicationSocket.getInputStream()));
 			clientOutput = new PrintStream(communicationSocket.getOutputStream());
 
-			
-			do {
-				try {
-					username = getUsername();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					communicationSocket.close();
-					System.out.println(username+" exited.");
-					return;
-				}
-				
-			} while(username.equals(""));
-			
-			Server.onlineUsers.add(this);
-			System.out.println(username+" joined.");
-			
-			sendOnlineList();
-
 			while(true) {
 				String input = clientInput.readLine();
-				if(input.equals("-1")) {
-					Server.onlineUsers.remove(this);
-					System.out.println(username+" exited.");
+
+				if(input.equals("/EXIT")) {
+					if(!Server.onlineUsers.isEmpty()) {
+						Server.onlineUsers.remove(this);
+						broadcastOnlineList(createOnlineList());
+						System.out.println(username+" exited.");
+					}
 					communicationSocket.close();
 					return;
 				}
-				
+
+				else if(input.startsWith("/USERNAME")) {
+					String name = input.split(":")[1];
+					String response = checkUsername(name);
+					clientOutput.println("/USERNAME:"+response);
+					if(response.equals("OK")) {
+						this.username=name;
+						Server.onlineUsers.add(this);
+						broadcastOnlineList(createOnlineList());
+						System.out.println(name+" has joined.");
+					}		
+				}
+
+
+				/*
+				//forwarding invite to someone
+				if(input.startsWith("\\INVITE")) {
+					String invite = input.split(" ")[1];
+					clientOutput.println("RECEIVED");
+					forwardInvite(invite);
+					input = clientInput.readLine();
+					if(input.equals("\\ACCEPTED")) {
+						clientOutput.println("\\ACCEPTED");
+					}
+				}
+				//receiving invite from someone
+				if(input.startsWith("\\INVITEDBY")) {
+					String inviter = input.split(" ")[1];
+					clientOutput.println("\\INVITEDBY "+inviter);
+				}*/
+
 			}
 			//Closing communication
 			//communicationSocket.close();
-			
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	private void sendOnlineList() {
-		if(Server.onlineUsers.isEmpty()) {
-			clientOutput.println("\\empty");
+
+	private String checkUsername(String name) {
+		if (Server.onlineUsers.isEmpty()) {
+			return "OK";
 		}
+		for (ClientThread t : Server.onlineUsers) {
+			if (t.username.equals(name)) {
+				return "NOT_OK";
+			}
+		}
+		return "OK";
+	}
+
+	private void broadcastOnlineList(String list) {
+		for (ClientThread t : Server.onlineUsers) {
+			t.clientOutput.println(list);
+		}
+	}
+	private String createOnlineList() {
+		String usernames="/LIST:";
+		/*if(Server.onlineUsers.isEmpty()) {
+			clientOutput.println(usernames);
+			return;
+		}*/
 		for(ClientThread t : Server.onlineUsers) {
-			clientOutput.println(t.username);
+			usernames+=t.username+";";
 		}
-		clientOutput.println("\\end");
+		return usernames;
 	}
 
-	private String getUsername() throws Exception {
-		String user="";
-		try {
-			String input = clientInput.readLine();
-			if(input.equals("-1")) {
-				throw new Exception("Client disconnected!");
-			}
-			if(Server.onlineUsers.isEmpty()) {
-				clientOutput.println(true);
-				user=input;
-				return user;
-			}
-			for(ClientThread t : Server.onlineUsers) {
-				if(t.username.equals(input)) {
-					clientOutput.println(false);
-					return user;
-				}
-			}
-			clientOutput.println(true);
-			user=input;
-			return user;	
-
-		} catch (IOException e) {
-			System.out.println(e);
-		} 
-		
-		return user;		
-	}
+//	private void forwardInvite(String user) {
+//		for(ClientThread t : Server.onlineUsers) {
+//			if (t.username.equals(user)) {
+//				this.opponent = t;
+//				t.clientOutput.println("\\INVITEDBY "+username);
+//				System.out.println("invite forwarded to "+user);
+//			}
+//		}
+//	}
 
 }
