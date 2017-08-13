@@ -58,16 +58,20 @@ public class ClientThread extends Thread {
 					}		
 				}
 
+				//this user is inviting someone to play
 				if(input.startsWith("/INVITE")) {
 					String name = input.split(":")[1];
 					forwardInviteTo(name);
 				}
 
+				//this user is receiving an invite to play
 				if(input.startsWith("/INVITEDBY")) {
 					String name = input.split(":")[1];
 					//forward to client
 					this.clientOutput.println("/INVITEDBY"+name);
 				}
+				
+				//this user is responding to an invite to play
 				if(input.startsWith("/RSVPTO")) {
 					String name = input.split(":")[1];
 					String response = input.split(":")[2];
@@ -80,15 +84,18 @@ public class ClientThread extends Thread {
 			//communicationSocket.close();
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Server.onlineUsers.remove(this);
+			broadcastOnlineList(createOnlineList());
+			System.out.println(username+" disconnected.");
+			return;
+			
 		}
 	}
 
 	private void forwardResponse(String name, String response) {
 		for(ClientThread t : Server.onlineUsers) {
 			if(t.username.equals(name)) {
-				t.clientOutput.println("/RSVPBY:"+name+":"+response);
+				t.clientOutput.println("/RSVPBY:"+this.username+":"+response);
 			}
 		}
 
