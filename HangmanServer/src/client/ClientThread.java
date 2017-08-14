@@ -77,6 +77,12 @@ public class ClientThread extends Thread {
 					String response = input.split(":")[2];
 					forwardResponse(name,response);
 				}
+				
+				if(input.startsWith("/WORD")){
+					String reciever = input.split(":")[2];
+					String word=input.split(":")[3];
+					forwardSignal(reciever, word);
+				}
 
 
 			}
@@ -90,6 +96,15 @@ public class ClientThread extends Thread {
 			return;
 			
 		}
+	}
+
+	private void forwardSignal(String reciever, String word) {
+		for(ClientThread t : Server.onlineUsers) {
+			if(t.username.equals(reciever)) {
+				t.clientOutput.println("/WORD_SET:"+word);
+			}
+		}
+		
 	}
 
 	private void forwardResponse(String name, String response) {
