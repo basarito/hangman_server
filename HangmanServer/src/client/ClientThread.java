@@ -24,6 +24,8 @@ public class ClientThread extends Thread {
 
 	String username="";
 	ClientThread opponent = null;
+	
+	boolean gameActive = false;
 
 	@Override
 	public void run() {
@@ -54,6 +56,7 @@ public class ClientThread extends Thread {
 						this.username=name;
 						Server.onlineUsers.add(this);
 						broadcastOnlineList(createOnlineList());
+						broadcastActiveGames(createActiveList());
 						System.out.println(name+" has joined.");
 					}		
 				}
@@ -84,6 +87,12 @@ public class ClientThread extends Thread {
 					forwardSignal(reciever, word);
 				}
 
+//				if(input.startsWith("/STATUS")) {
+//					if(input.split(":")[1].equals("true"))
+//						gameActive = true;
+//					else
+//						gameActive = false;
+//				}
 
 			}
 			//Closing communication
@@ -111,14 +120,42 @@ public class ClientThread extends Thread {
 		for(ClientThread t : Server.onlineUsers) {
 			if(t.username.equals(name)) {
 				t.clientOutput.println("/RSVPBY:"+this.username+":"+response);
+				if (response.equals("ACCEPTED")) {
+					Server.activeGames.add(this.username);
+					Server.activeGames.add(t.username);
+					broadcastActiveGames(createActiveList());
+				}
+				return;
 			}
 		}
 
 	}
 
+	private void broadcastActiveGames(String createActiveList) {
+		for (ClientThread t : Server.onlineUsers) {
+			t.clientOutput.println(createActiveList);
+		}
+	}
+
+	private String createActiveList() {
+		String usernames="/ACTIVEGAMES:";
+		if(Server.activeGames.isEmpty()) {
+			usernames+="/EMPTY";
+			return usernames;
+		}
+		for(String s : Server.activeGames) {
+			usernames+=s+";";
+		}
+		return usernames;
+	}
+
 	private void forwardInviteTo(String name) {
 		for(ClientThread t : Server.onlineUsers) {
 			if(t.username.equals(name)) {
+				if(t.gameActive) {
+					this.clientOutput.println("/RSVPBY:"+t.username+":BUSY");
+					return;
+				}
 				t.clientOutput.println("/INVITEDBY:"+this.username);
 				return;
 			}
@@ -154,15 +191,4 @@ public class ClientThread extends Thread {
 		}
 		return usernames;
 	}
-
-	//	private void forwardInvite(String user) {
-	//		for(ClientThread t : Server.onlineUsers) {
-	//			if (t.username.equals(user)) {
-	//				this.opponent = t;
-	//				t.clientOutput.println("\\INVITEDBY "+username);
-	//				System.out.println("invite forwarded to "+user);
-	//			}
-	//		}
-	//	}
-
 }

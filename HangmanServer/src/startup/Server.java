@@ -10,6 +10,7 @@ import client.ClientThread;
 public class Server {
 	
 	public static LinkedList<ClientThread> onlineUsers = new LinkedList<ClientThread>();
+	public static LinkedList<String> activeGames = new LinkedList<String>();
 
 	public static void main(String[] args) {
 		
