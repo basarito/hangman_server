@@ -84,7 +84,8 @@ public class ClientThread extends Thread {
 				if(input.startsWith("/WORD")){
 					String reciever = input.split(":")[2];
 					String word=input.split(":")[3];
-					forwardSignal(reciever, word);
+					String category=input.split(":")[4];
+					forwardSignal(reciever, word, category);
 				}
 
 //				if(input.startsWith("/STATUS")) {
@@ -107,10 +108,10 @@ public class ClientThread extends Thread {
 		}
 	}
 
-	private void forwardSignal(String reciever, String word) {
+	private void forwardSignal(String reciever, String word, String category) {
 		for(ClientThread t : Server.onlineUsers) {
 			if(t.username.equals(reciever)) {
-				t.clientOutput.println("/WORD_SET:"+word);
+				t.clientOutput.println("/WORD_SET:"+word+":"+category);
 			}
 		}
 		
