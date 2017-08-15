@@ -88,6 +88,24 @@ public class ClientThread extends Thread {
 					forwardSignal(reciever, word, category);
 				}
 
+				if(input.startsWith("/PIC")){
+					String name=input.split(":")[1];
+					String url=input.split(":")[2];
+					forwardPictureChangedSignal(name, url);
+				}
+				if(input.startsWith("/LETTER")){
+					String letter=input.split(":")[1];
+					String name=input.split(":")[2];
+					forwardLetterGotWrongSignal(letter, name);
+				}
+				
+				if(input.startsWith("/GUESSED_LETTER")){
+					String letter=input.split(":")[1];
+					String name=input.split(":")[2];
+					forwardLetterGotRightSignal(letter, name);
+				}
+				
+				
 //				if(input.startsWith("/STATUS")) {
 //					if(input.split(":")[1].equals("true"))
 //						gameActive = true;
@@ -131,6 +149,35 @@ public class ClientThread extends Thread {
 		}
 
 	}
+	
+	
+	private void forwardLetterGotRightSignal(String letter, String name) {
+		for (ClientThread t: Server.onlineUsers){
+			if(t.username.equals(name)){
+				t.clientOutput.println("/RIGHT_LETTER:"+letter);
+			}
+		}
+		
+	}
+
+	private void forwardLetterGotWrongSignal(String letter, String name) {
+		for (ClientThread t: Server.onlineUsers){
+			if(t.username.equals(name)){
+				t.clientOutput.println("/WRONG_LETTER:"+letter);
+			}
+		}
+		
+	}
+
+	private void forwardPictureChangedSignal(String name, String url) {
+		for (ClientThread t: Server.onlineUsers){
+			if(t.username.equals(name)){
+				t.clientOutput.println("/PIC_CHANGED:"+url);
+			}
+		}
+		
+	}
+	
 
 	private void broadcastActiveGames(String createActiveList) {
 		for (ClientThread t : Server.onlineUsers) {
