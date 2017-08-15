@@ -105,6 +105,10 @@ public class ClientThread extends Thread {
 					forwardLetterGotRightSignal(letter, name);
 				}
 				
+				if(input.startsWith("/QUIT")){
+					String name=input.split(":")[1];
+					forwardQuitSignal(name);
+				}
 				
 //				if(input.startsWith("/STATUS")) {
 //					if(input.split(":")[1].equals("true"))
@@ -132,6 +136,8 @@ public class ClientThread extends Thread {
 			
 		}
 	}
+
+
 
 	private void forwardMessage(String name, String message) {
 		for(ClientThread t : Server.onlineUsers) {
@@ -255,5 +261,27 @@ public class ClientThread extends Thread {
 			usernames+=t.username+";";
 		}
 		return usernames;
+	}
+	
+	private void forwardQuitSignal(String name) {
+		for(ClientThread t : Server.onlineUsers) {
+			if(t.username.equals(name)) {
+				t.clientOutput.println("/QUIT_SENT:"+this.username);
+				for (int i = 0; i < Server.activeGames.size(); i++) {
+					if(Server.activeGames.get(i).equals(this.username)){
+						System.out.println(this.username);
+						Server.activeGames.remove(i);
+					}else if(Server.activeGames.get(i).equals(t.username)){
+						System.out.println(t.username);
+						Server.activeGames.remove(i);
+					}else{
+						continue;
+					}
+				}
+				broadcastActiveGames(createActiveList());
+				return;
+			}
+		}
+		
 	}
 }
