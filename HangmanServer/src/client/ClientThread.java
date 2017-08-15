@@ -112,6 +112,13 @@ public class ClientThread extends Thread {
 //					else
 //						gameActive = false;
 //				}
+				
+				//Forward message to user 
+				if(input.startsWith("/CHATSEND")) {
+					String name = input.split(":")[1];
+					String message = input.split(":")[2];
+					forwardMessage(name, message);
+				}
 
 			}
 			//Closing communication
@@ -124,6 +131,16 @@ public class ClientThread extends Thread {
 			return;
 			
 		}
+	}
+
+	private void forwardMessage(String name, String message) {
+		for(ClientThread t : Server.onlineUsers) {
+			if(t.username.equals(name)) {
+				t.clientOutput.println("/CHATRCV:"+this.username+":"+message);
+				return;
+			}
+		}
+		
 	}
 
 	private void forwardSignal(String reciever, String word, String category) {
