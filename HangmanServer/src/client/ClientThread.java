@@ -102,7 +102,8 @@ public class ClientThread extends Thread {
 				if(input.startsWith("/GUESSED_LETTER")){
 					String letter=input.split(":")[1];
 					String name=input.split(":")[2];
-					forwardLetterGotRightSignal(letter, name);
+					String index=input.split(":")[3];
+					forwardLetterGotRightSignal(letter, name, index);
 				}
 				
 				if(input.startsWith("/QUIT")){
@@ -174,10 +175,10 @@ public class ClientThread extends Thread {
 	}
 	
 	
-	private void forwardLetterGotRightSignal(String letter, String name) {
+	private void forwardLetterGotRightSignal(String letter, String name, String index) {
 		for (ClientThread t: Server.onlineUsers){
 			if(t.username.equals(name)){
-				t.clientOutput.println("/RIGHT_LETTER:"+letter);
+				t.clientOutput.println("/RIGHT_LETTER:"+letter+":"+index);
 			}
 		}
 		
