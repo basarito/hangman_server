@@ -138,6 +138,14 @@ public class ClientThread extends Thread {
 					
 					forwardWindowSwitchSignal(name);
 				}
+				
+				if(input.startsWith("/CHNG_RSLT")){
+					String name = input.split(":")[1];
+					String r1=input.split(":")[2];
+					String r2=input.split(":")[3];
+					
+					forwardResultChangedSignal(name, r1, r2);
+				}
 
 			}
 			//Closing communication
@@ -151,6 +159,18 @@ public class ClientThread extends Thread {
 			
 		}
 	}
+
+
+
+	private void forwardResultChangedSignal(String name, String r1, String r2) {
+		for(ClientThread t : Server.onlineUsers) {
+			if(t.username.equals(name)) {
+				t.clientOutput.println("/RSLT_CHNGD:"+r1+":"+r2);
+				return;
+			}
+		}
+	
+}
 
 
 
@@ -169,7 +189,7 @@ public class ClientThread extends Thread {
 	private void forwardGameStatusWindow(String name, String gameRqNum, String result) {
 		for(ClientThread t : Server.onlineUsers) {
 			if(t.username.equals(name)) {
-				t.clientOutput.println("/RCV_STATUS_WND:"+gameRqNum+":"+result);
+				t.clientOutput.println("/STATUS_WND_RCV:"+gameRqNum+":"+result);
 				return;
 			}
 		}
