@@ -1,9 +1,14 @@
 package startup;
 
+import java.awt.Dimension;
+import java.awt.Font;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
+
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 
 import client.ClientThread;
 
@@ -41,4 +46,6 @@ public class Server {
 			System.out.println("Error on server: "+e);
 		}
 	}
+	
+	
 }

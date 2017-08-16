@@ -117,12 +117,26 @@ public class ClientThread extends Thread {
 					System.out.println("broadcast");
 				}
 				
+				if(input.startsWith("/STATUS_WND")) {
+					String name = input.split(":")[1];
+					String gameRqNum = input.split(":")[2];
+					String result=input.split(":")[3];
+					forwardGameStatusWindow(name, gameRqNum, result);
+				}
+				
 				
 				//Forward message to user 
 				if(input.startsWith("/CHATSEND")) {
 					String name = input.split(":")[1];
 					String message = input.split(":")[2];
 					forwardMessage(name, message);
+				}
+				
+				
+				if(input.startsWith("/SWITCH_WND")) {
+					String name = input.split(":")[1];
+					
+					forwardWindowSwitchSignal(name);
 				}
 
 			}
@@ -137,6 +151,30 @@ public class ClientThread extends Thread {
 			
 		}
 	}
+
+
+
+	private void forwardWindowSwitchSignal(String name) {
+		for(ClientThread t : Server.onlineUsers) {
+			if(t.username.equals(name)) {
+				t.clientOutput.println("/RCV_SWITCH_WND:");
+				return;
+			}
+		}
+	
+}
+
+
+
+	private void forwardGameStatusWindow(String name, String gameRqNum, String result) {
+		for(ClientThread t : Server.onlineUsers) {
+			if(t.username.equals(name)) {
+				t.clientOutput.println("/RCV_STATUS_WND:"+gameRqNum+":"+result);
+				return;
+			}
+		}
+	
+}
 
 
 
