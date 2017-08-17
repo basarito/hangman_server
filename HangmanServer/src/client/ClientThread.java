@@ -133,11 +133,6 @@ public class ClientThread extends Thread {
 				}
 				
 				
-				if(input.startsWith("/SWITCH_WND")) {
-					String name = input.split(":")[1];
-					
-					forwardWindowSwitchSignal(name);
-				}
 				
 				if(input.startsWith("/CHNG_RSLT")){
 					String name = input.split(":")[1];
@@ -173,16 +168,6 @@ public class ClientThread extends Thread {
 }
 
 
-
-	private void forwardWindowSwitchSignal(String name) {
-		for(ClientThread t : Server.onlineUsers) {
-			if(t.username.equals(name)) {
-				t.clientOutput.println("/RCV_SWITCH_WND:");
-				return;
-			}
-		}
-	
-}
 
 
 
