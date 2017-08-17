@@ -68,6 +68,11 @@ public class ClientThread extends Thread {
 					String name = input.split(":")[1];
 					forwardInviteTo(name);
 				}
+				
+				if(input.startsWith("/RST_W_L")) {
+					String name = input.split(":")[1];
+					forwardSignalResetWinsLosses(name);
+				}
 
 				//this user is receiving an invite to play
 				if(input.startsWith("/INVITEDBY")) {
@@ -160,6 +165,18 @@ public class ClientThread extends Thread {
 			
 		}
 	}
+
+
+
+	private void forwardSignalResetWinsLosses(String name) {
+		for(ClientThread t : Server.onlineUsers) {
+			if(t.username.equals(name)) {
+				t.clientOutput.println("/W_L_RCV:");
+				return;
+			}
+		}
+	
+}
 
 
 
