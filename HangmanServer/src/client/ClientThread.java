@@ -132,6 +132,12 @@ public class ClientThread extends Thread {
 					forwardMessage(name, message);
 				}
 				
+				if(input.startsWith("/GAME_OVER")){
+					String name = input.split(":")[1];
+					String msg=input.split(":")[2];
+					
+					forwardGameOverSignal(name, msg);
+				}
 				
 				
 				if(input.startsWith("/CHNG_RSLT")){
@@ -154,6 +160,18 @@ public class ClientThread extends Thread {
 			
 		}
 	}
+
+
+
+	private void forwardGameOverSignal(String name, String msg) {
+		for(ClientThread t : Server.onlineUsers) {
+			if(t.username.equals(name)) {
+				t.clientOutput.println("/GAME_OVER_RCV:"+msg);
+				return;
+			}
+		}
+	
+}
 
 
 
