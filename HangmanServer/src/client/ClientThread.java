@@ -112,6 +112,14 @@ public class ClientThread extends Thread {
 					String index=input.split(":")[3];
 					forwardLetterGotRightSignal(letter, name, index);
 				}
+				if(input.startsWith("/NUM_GM_RQ")){
+					String name=input.split(":")[1];
+					String num=input.split(":")[2];
+					forwardGmeRqNum( name, num);
+				}
+			
+				
+				
 				
 				if(input.startsWith("/QUIT")){
 					String name=input.split(":")[1];
@@ -152,6 +160,7 @@ public class ClientThread extends Thread {
 					
 					forwardResultChangedSignal(name, r1, r2);
 				}
+				
 
 			}
 			//Closing communication
@@ -167,11 +176,21 @@ public class ClientThread extends Thread {
 	}
 
 
+	private void forwardGmeRqNum(String name, String num) {
+		for(ClientThread t : Server.onlineUsers) {
+			if(t.username.equals(name)) {
+				t.clientOutput.println("/NUM_RCV:"+num);
+				return;
+			}
+		}
+	
+}
+
 
 	private void forwardSignalResetWinsLosses(String name) {
 		for(ClientThread t : Server.onlineUsers) {
 			if(t.username.equals(name)) {
-				t.clientOutput.println("/W_L_RCV:");
+				t.clientOutput.println("/W_L_RCV");
 				return;
 			}
 		}
