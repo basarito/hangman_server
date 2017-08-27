@@ -22,15 +22,14 @@ public class ClientThread extends Thread {
 	BufferedReader clientInput = null;
 	PrintStream clientOutput = null;
 
+	//Client username
 	String username="";
-//	ClientThread opponent = null;
-	
-//	boolean gameActive = false;
 
 	@Override
 	public void run() {
 
 		try {
+
 			//Initializing I/O streams
 			clientInput = new BufferedReader(new InputStreamReader(communicationSocket.getInputStream()));
 			clientOutput = new PrintStream(communicationSocket.getOutputStream());
@@ -38,6 +37,7 @@ public class ClientThread extends Thread {
 			while(true) {
 				String input = clientInput.readLine();
 
+				//Exiting app signal received 
 				if(input.equals("/EXIT")) {
 					if(!Server.onlineUsers.isEmpty()) {
 						Server.onlineUsers.remove(this);
@@ -50,6 +50,7 @@ public class ClientThread extends Thread {
 					return;
 				}
 
+				//Username validation
 				if(input.startsWith("/USERNAME")) {
 					String name = input.split(":")[1];
 					String response = checkUsername(name);
@@ -63,31 +64,31 @@ public class ClientThread extends Thread {
 					}		
 				}
 
-				//this user is inviting someone to play
+				//This user is inviting someone to play
 				if(input.startsWith("/INVITE")) {
 					String name = input.split(":")[1];
 					forwardInviteTo(name);
 				}
-				
-				if(input.startsWith("/RST_W_L")) {
-					String name = input.split(":")[1];
-					forwardSignalResetWinsLosses(name);
-				}
 
-				//this user is receiving an invite to play
+				//This user is receiving an invite to play
 				if(input.startsWith("/INVITEDBY")) {
 					String name = input.split(":")[1];
 					//forward to client
 					this.clientOutput.println("/INVITEDBY"+name);
 				}
-				
-				//this user is responding to an invite to play
+
+				//This user is responding to an invite to play
 				if(input.startsWith("/RSVPTO")) {
 					String name = input.split(":")[1];
 					String response = input.split(":")[2];
 					forwardResponse(name,response);
 				}
-				
+
+				if(input.startsWith("/RST_W_L")) {
+					String name = input.split(":")[1];
+					forwardSignalResetWinsLosses(name);
+				}
+
 				if(input.startsWith("/WORD")){
 					String reciever = input.split(":")[2];
 					String word=input.split(":")[3];
@@ -105,7 +106,7 @@ public class ClientThread extends Thread {
 					String name=input.split(":")[2];
 					forwardLetterGotWrongSignal(letter, name);
 				}
-				
+
 				if(input.startsWith("/GUESSED_LETTER")){
 					String letter=input.split(":")[1];
 					String name=input.split(":")[2];
@@ -117,61 +118,54 @@ public class ClientThread extends Thread {
 					String num=input.split(":")[2];
 					forwardGmeRqNum( name, num);
 				}
-			
-				
-				
-				
+
+				//Forwarding quit signal to another player				
 				if(input.startsWith("/QUIT")){
 					String name=input.split(":")[1];
 					forwardQuitSignal(name);
 					Server.activeGames.remove(name);
 					Server.activeGames.remove(this.username);
 					broadcastActiveGames(createActiveList());
-					System.out.println("broadcast");
+					//System.out.println("broadcast");
 				}
-				
+
 				if(input.startsWith("/STATUS_WND")) {
 					String name = input.split(":")[1];
 					String gameRqNum = input.split(":")[2];
 					String result=input.split(":")[3];
 					forwardGameStatusWindow(name, gameRqNum, result);
 				}
-				
-				
-				//Forward message to user 
+
+				//Forward chat message to user 
 				if(input.startsWith("/CHATSEND")) {
 					String name = input.split(":")[1];
 					String message = input.split(":")[2];
 					forwardMessage(name, message);
 				}
-				
+
 				if(input.startsWith("/GAME_OVER")){
 					String name = input.split(":")[1];
 					String msg=input.split(":")[2];
-					
+
 					forwardGameOverSignal(name, msg);
 				}
-				
-				
+
 				if(input.startsWith("/CHNG_RSLT")){
 					String name = input.split(":")[1];
 					String r1=input.split(":")[2];
 					String r2=input.split(":")[3];
-					
+
 					forwardResultChangedSignal(name, r1, r2);
 				}
-				
+
 
 			}
-			//Closing communication
-			//communicationSocket.close();
 
 		} catch (IOException e) {
 			Server.onlineUsers.remove(this);
 			broadcastOnlineList(createOnlineList());
 			System.out.println(username+" disconnected.");
 			return;
-			
 		}
 	}
 
@@ -183,9 +177,7 @@ public class ClientThread extends Thread {
 				return;
 			}
 		}
-	
-}
-
+	}
 
 	private void forwardSignalResetWinsLosses(String name) {
 		for(ClientThread t : Server.onlineUsers) {
@@ -194,10 +186,7 @@ public class ClientThread extends Thread {
 				return;
 			}
 		}
-	
-}
-
-
+	}
 
 	private void forwardGameOverSignal(String name, String msg) {
 		for(ClientThread t : Server.onlineUsers) {
@@ -206,10 +195,7 @@ public class ClientThread extends Thread {
 				return;
 			}
 		}
-	
-}
-
-
+	}
 
 	private void forwardResultChangedSignal(String name, String r1, String r2) {
 		for(ClientThread t : Server.onlineUsers) {
@@ -218,12 +204,7 @@ public class ClientThread extends Thread {
 				return;
 			}
 		}
-	
-}
-
-
-
-
+	}
 
 	private void forwardGameStatusWindow(String name, String gameRqNum, String result) {
 		for(ClientThread t : Server.onlineUsers) {
@@ -232,10 +213,7 @@ public class ClientThread extends Thread {
 				return;
 			}
 		}
-	
-}
-
-
+	}
 
 	private void forwardMessage(String name, String message) {
 		for(ClientThread t : Server.onlineUsers) {
@@ -244,7 +222,6 @@ public class ClientThread extends Thread {
 				return;
 			}
 		}
-		
 	}
 
 	private void forwardSignal(String reciever, String word, String category) {
@@ -253,7 +230,6 @@ public class ClientThread extends Thread {
 				t.clientOutput.println("/WORD_SET:"+word+":"+category);
 			}
 		}
-		
 	}
 
 	private void forwardResponse(String name, String response) {
@@ -261,8 +237,6 @@ public class ClientThread extends Thread {
 			if(t.username.equals(name)) {
 				t.clientOutput.println("/RSVPBY:"+this.username+":"+response);
 				if (response.equals("ACCEPTED")) {
-//					t.gameActive=true;
-//					this.gameActive=true;
 					Server.activeGames.add(this.username);
 					Server.activeGames.add(t.username);
 					broadcastActiveGames(createActiveList());
@@ -271,15 +245,14 @@ public class ClientThread extends Thread {
 			}
 		}
 	}
-	
-	
+
+
 	private void forwardLetterGotRightSignal(String letter, String name, String index) {
 		for (ClientThread t: Server.onlineUsers){
 			if(t.username.equals(name)){
 				t.clientOutput.println("/RIGHT_LETTER:"+letter+":"+index);
 			}
 		}
-		
 	}
 
 	private void forwardLetterGotWrongSignal(String letter, String name) {
@@ -288,7 +261,6 @@ public class ClientThread extends Thread {
 				t.clientOutput.println("/WRONG_LETTER:"+letter);
 			}
 		}
-		
 	}
 
 	private void forwardPictureChangedSignal(String name, String url) {
@@ -297,9 +269,7 @@ public class ClientThread extends Thread {
 				t.clientOutput.println("/PIC_CHANGED:"+url);
 			}
 		}
-		
 	}
-	
 
 	private void broadcastActiveGames(String activeList) {
 		for (ClientThread t : Server.onlineUsers) {
@@ -322,16 +292,11 @@ public class ClientThread extends Thread {
 	private void forwardInviteTo(String name) {
 		for(ClientThread t : Server.onlineUsers) {
 			if(t.username.equals(name)) {
-//				if(t.gameActive) {
-//					this.clientOutput.println("/RSVPBY:"+t.username+":BUSY");
-//					return;
-//				}
 				t.clientOutput.println("/INVITEDBY:"+this.username);
 				return;
 			}
 		}		
 	}
-
 
 	private String checkUsername(String name) {
 		if (Server.onlineUsers.isEmpty()) {
@@ -350,38 +315,21 @@ public class ClientThread extends Thread {
 			t.clientOutput.println(list);
 		}
 	}
+
 	private String createOnlineList() {
 		String usernames="/LIST:";
-		/*if(Server.onlineUsers.isEmpty()) {
-			clientOutput.println(usernames);
-			return;
-		}*/
 		for(ClientThread t : Server.onlineUsers) {
 			usernames+=t.username+";";
 		}
 		return usernames;
 	}
-	
+
 	private void forwardQuitSignal(String name) {
 		for(ClientThread t : Server.onlineUsers) {
 			if(t.username.equals(name)) {
 				t.clientOutput.println("/QUIT_SENT:"+this.username);
-//				for (int i = 0; i < Server.activeGames.size(); i++) {
-//					if(Server.activeGames.get(i).equals(this.username)){
-//						System.out.println(this.username);
-//						Server.activeGames.remove(i);
-//					}else if(Server.activeGames.get(i).equals(t.username)){
-//						System.out.println(t.username);
-//						Server.activeGames.remove(i);
-//					}else{
-//						continue;
-//					}
-//				}
-//				this.gameActive=false;
-//				t.gameActive=false;
 				return;
 			}
 		}
-		
 	}
 }
