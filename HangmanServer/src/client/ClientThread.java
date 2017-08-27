@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.InetAddress;
 import java.net.Socket;
 
 import startup.Server;
@@ -45,13 +44,14 @@ public class ClientThread extends Thread {
 						Server.activeGames.remove(this.username);
 						broadcastActiveGames(createActiveList());
 						System.out.println(username+" exited.");
-					}
+					} else
+						System.out.println("Client disconnected.");
 					communicationSocket.close();
 					return;
 				}
 
 				//Username validation
-				if(input.startsWith("/USERNAME")) {
+				else if(input.startsWith("/USERNAME")) {
 					String name = input.split(":")[1];
 					String response = checkUsername(name);
 					clientOutput.println("/USERNAME:"+response);
@@ -65,62 +65,62 @@ public class ClientThread extends Thread {
 				}
 
 				//This user is inviting someone to play
-				if(input.startsWith("/INVITE")) {
+				else if(input.startsWith("/INVITE")) {
 					String name = input.split(":")[1];
 					forwardInviteTo(name);
 				}
 
 				//This user is receiving an invite to play
-				if(input.startsWith("/INVITEDBY")) {
+				else if(input.startsWith("/INVITEDBY")) {
 					String name = input.split(":")[1];
 					//forward to client
 					this.clientOutput.println("/INVITEDBY"+name);
 				}
 
 				//This user is responding to an invite to play
-				if(input.startsWith("/RSVPTO")) {
+				else if(input.startsWith("/RSVPTO")) {
 					String name = input.split(":")[1];
 					String response = input.split(":")[2];
 					forwardResponse(name,response);
 				}
 
-				if(input.startsWith("/RST_W_L")) {
+				else if(input.startsWith("/RST_W_L")) {
 					String name = input.split(":")[1];
 					forwardSignalResetWinsLosses(name);
 				}
 
-				if(input.startsWith("/WORD")){
+				else if(input.startsWith("/WORD")){
 					String reciever = input.split(":")[2];
 					String word=input.split(":")[3];
 					String category=input.split(":")[4];
 					forwardSignal(reciever, word, category);
 				}
 
-				if(input.startsWith("/PIC")){
+				else if(input.startsWith("/PIC")){
 					String name=input.split(":")[1];
 					String url=input.split(":")[2];
 					forwardPictureChangedSignal(name, url);
 				}
-				if(input.startsWith("/LETTER")){
+				else if(input.startsWith("/LETTER")){
 					String letter=input.split(":")[1];
 					String name=input.split(":")[2];
 					forwardLetterGotWrongSignal(letter, name);
 				}
 
-				if(input.startsWith("/GUESSED_LETTER")){
+				else if(input.startsWith("/GUESSED_LETTER")){
 					String letter=input.split(":")[1];
 					String name=input.split(":")[2];
 					String index=input.split(":")[3];
 					forwardLetterGotRightSignal(letter, name, index);
 				}
-				if(input.startsWith("/NUM_GM_RQ")){
+				else if(input.startsWith("/NUM_GM_RQ")){
 					String name=input.split(":")[1];
 					String num=input.split(":")[2];
 					forwardGmeRqNum( name, num);
 				}
 
 				//Forwarding quit signal to another player				
-				if(input.startsWith("/QUIT")){
+				else if(input.startsWith("/QUIT")){
 					String name=input.split(":")[1];
 					forwardQuitSignal(name);
 					Server.activeGames.remove(name);
@@ -129,7 +129,7 @@ public class ClientThread extends Thread {
 					//System.out.println("broadcast");
 				}
 
-				if(input.startsWith("/STATUS_WND")) {
+				else if(input.startsWith("/STATUS_WND")) {
 					String name = input.split(":")[1];
 					String gameRqNum = input.split(":")[2];
 					String result=input.split(":")[3];
@@ -137,28 +137,27 @@ public class ClientThread extends Thread {
 				}
 
 				//Forward chat message to user 
-				if(input.startsWith("/CHATSEND")) {
+				else if(input.startsWith("/CHATSEND")) {
 					String name = input.split(":")[1];
 					String message = input.split(":")[2];
 					forwardMessage(name, message);
 				}
 
-				if(input.startsWith("/GAME_OVER")){
+				else if(input.startsWith("/GAME_OVER")){
 					String name = input.split(":")[1];
 					String msg=input.split(":")[2];
 
 					forwardGameOverSignal(name, msg);
 				}
 
-				if(input.startsWith("/CHNG_RSLT")){
+				else if(input.startsWith("/CHNG_RSLT")){
 					String name = input.split(":")[1];
 					String r1=input.split(":")[2];
 					String r2=input.split(":")[3];
-
 					forwardResultChangedSignal(name, r1, r2);
 				}
-
-
+				else
+					continue;
 			}
 
 		} catch (IOException e) {

@@ -1,14 +1,9 @@
 package startup;
 
-import java.awt.Dimension;
-import java.awt.Font;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
-
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
 
 import client.ClientThread;
 
@@ -22,10 +17,8 @@ public class Server {
 		int portNumber = 6666;
 		
 		try {
-			//Socket to listen for connections 
-			ServerSocket server = new ServerSocket(portNumber);
-		
-			//Socket that gets created for each client
+
+			ServerSocket server = new ServerSocket(portNumber);		
 			Socket clientSocket = null;
 			
 			//Listening for incoming connections
@@ -39,7 +32,6 @@ public class Server {
 				//Creating a thread for the new client
 				ClientThread newClient = new ClientThread(clientSocket);
 				newClient.start();
-	
 			}
 			
 		} catch (IOException e) {
